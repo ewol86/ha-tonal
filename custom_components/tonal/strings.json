@@ -2,7 +2,6 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect your Tonal",
         "description": "Sign in with the first account on the trainer. You can add the other people who use it afterwards. Credentials go straight to Tonal's Auth0 servers and are only stored locally, so the integration can renew its session.",
         "data": {
           "email": "Email",
@@ -58,7 +57,6 @@
   "options": {
     "step": {
       "init": {
-        "title": "Tonal options",
         "data": {
           "scan_interval": "Update interval (minutes)",
           "fetch_titles": "Look up workout names"
