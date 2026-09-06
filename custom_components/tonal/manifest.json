@@ -1,12 +1,12 @@
 {
   "domain": "tonal",
   "name": "Tonal",
-  "codeowners": ["@curlrequests"],
+  "codeowners": ["@ewol86"],
   "config_flow": true,
-  "documentation": "https://github.com/curlrequests/toneget",
+  "documentation": "https://github.com/ewol86/ha-tonal",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/curlrequests/toneget/issues",
+  "issue_tracker": "https://github.com/ewol86/ha-tonal/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "2.0.0"

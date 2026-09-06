@@ -15,7 +15,7 @@ on-disk caching so it is cheap to poll.
 ### HACS (recommended)
 
 1. HACS → **⋮** → **Custom repositories**
-2. Add this repository's URL, category **Integration**
+2. Add `https://github.com/ewol86/ha-tonal`, category **Integration**
 3. Install **Tonal**, then restart Home Assistant
 4. **Settings → Devices & Services → Add Integration → Tonal**
 
