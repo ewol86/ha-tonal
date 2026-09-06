@@ -2,17 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "Connect your Tonal account",
-        "description": "Your credentials are sent straight to Tonal's Auth0 servers and are only stored locally, so the integration can renew its session.",
+        "title": "Connect your Tonal",
+        "description": "Sign in with the first account on the trainer. You can add the other people who use it afterwards. Credentials go straight to Tonal's Auth0 servers and are only stored locally, so the integration can renew its session.",
         "data": {
           "email": "Email",
-          "password": "Password"
-        }
-      },
-      "reauth_confirm": {
-        "title": "Tonal needs you to sign in again",
-        "description": "Re-enter the password for {email}.",
-        "data": {
           "password": "Password"
         }
       }
@@ -23,8 +16,43 @@
       "unknown": "Unexpected error. Check the logs for details."
     },
     "abort": {
-      "already_configured": "That Tonal account is already set up.",
-      "reauth_successful": "Tonal was reconnected."
+      "single_instance_allowed": "Tonal is already set up. Add more people to it as accounts rather than setting it up again."
+    }
+  },
+  "config_subentries": {
+    "account": {
+      "title": "Tonal account",
+      "step": {
+        "user": {
+          "title": "Add an account",
+          "description": "Sign in with another person's Tonal account. They get their own device and their own set of sensors.",
+          "data": {
+            "email": "Email",
+            "password": "Password"
+          }
+        },
+        "reconfigure": {
+          "title": "Sign in again",
+          "description": "Re-enter the password for {email}. Tonal invalidates a session from time to time, and this is how you restore it.",
+          "data": {
+            "password": "Password"
+          }
+        }
+      },
+      "error": {
+        "invalid_auth": "Tonal rejected that email and password.",
+        "cannot_connect": "Could not reach Tonal.",
+        "unknown": "Unexpected error. Check the logs for details."
+      },
+      "abort": {
+        "already_configured": "That Tonal account has already been added.",
+        "reconfigure_successful": "The account was reconnected."
+      },
+      "initiate_flow": {
+        "user": "Add account",
+        "reconfigure": "Sign in again"
+      },
+      "entry_type": "account"
     }
   },
   "options": {
@@ -66,11 +94,11 @@
   "services": {
     "export_data": {
       "name": "Export data",
-      "description": "Writes the current Tonal data to a JSON file in the ToneGet export format.",
+      "description": "Writes one account's Tonal data to a JSON file in the ToneGet export format.",
       "fields": {
-        "config_entry_id": {
-          "name": "Config entry",
-          "description": "Which Tonal account to export. Defaults to the first one."
+        "account": {
+          "name": "Account",
+          "description": "Which account to export, by the name shown on its device. Required when more than one account is set up."
         },
         "file_path": {
           "name": "File path",

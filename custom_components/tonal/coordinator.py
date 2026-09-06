@@ -7,9 +7,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -162,27 +161,39 @@ class TonalCoordinator(DataUpdateCoordinator[TonalData]):
         self,
         hass: HomeAssistant,
         entry: ConfigEntry,
+        subentry: ConfigSubentry,
         api: TonalApi,
         scan_interval: timedelta,
         fetch_titles: bool,
     ) -> None:
-        """Initialise the coordinator."""
+        """Initialise the coordinator for one account on the trainer."""
         super().__init__(
             hass,
             _LOGGER,
-            name=DOMAIN,
+            name=f"{DOMAIN} {subentry.title}",
             config_entry=entry,
             update_interval=scan_interval,
         )
+        # Subentries are frozen and replaced wholesale on update, so hold the
+        # id and look the current one up rather than caching the object.
+        self.subentry_id = subentry.subentry_id
+        self.account_title = subentry.title
         self.api = api
         self.fetch_titles = fetch_titles
-        self.user_id: str | None = None
+        self.user_id: str | None = subentry.unique_id
         # Template titles never change, so they are cached on disk rather than
         # re-fetched (one request each) on every poll.
         self._store: Store[dict[str, str]] = Store(
-            hass, STORAGE_VERSION, STORAGE_KEY_TEMPLATE.format(entry_id=entry.entry_id)
+            hass,
+            STORAGE_VERSION,
+            STORAGE_KEY_TEMPLATE.format(subentry_id=subentry.subentry_id),
         )
         self._titles: dict[str, str] | None = None
+
+    @property
+    def subentry(self) -> ConfigSubentry | None:
+        """Return the account subentry this coordinator serves."""
+        return self.config_entry.subentries.get(self.subentry_id)
 
     async def _async_load_titles(self) -> dict[str, str]:
         """Load the on-disk template title cache."""
@@ -220,12 +231,14 @@ class TonalCoordinator(DataUpdateCoordinator[TonalData]):
         return titles
 
     def _persist_refresh_token(self) -> None:
-        """Write a rotated refresh token back to the config entry."""
+        """Write a rotated refresh token back to this account's subentry."""
         token = self.api.refresh_token
-        if token and token != self.config_entry.data.get(CONF_REFRESH_TOKEN):
-            self.hass.config_entries.async_update_entry(
+        subentry = self.subentry
+        if subentry and token and token != subentry.data.get(CONF_REFRESH_TOKEN):
+            self.hass.config_entries.async_update_subentry(
                 self.config_entry,
-                data={**self.config_entry.data, CONF_REFRESH_TOKEN: token},
+                subentry,
+                data={**subentry.data, CONF_REFRESH_TOKEN: token},
             )
 
     async def _async_update_data(self) -> TonalData:
@@ -246,7 +259,19 @@ class TonalCoordinator(DataUpdateCoordinator[TonalData]):
             )
             current_raw = await self.api.async_get_current_strength(self.user_id)
         except TonalAuthError as err:
-            raise ConfigEntryAuthFailed(str(err)) from err
+            # Deliberately not ConfigEntryAuthFailed: that would fail the whole
+            # config entry and take every other account on the trainer down with
+            # it. Subentry flows cannot do reauth, so point at reconfigure.
+            _LOGGER.error(
+                "Tonal rejected the session for %s (%s). Reconfigure that "
+                "account to enter the password again",
+                self.account_title,
+                err,
+            )
+            raise UpdateFailed(
+                f"Authentication failed for {self.account_title}; "
+                "reconfigure the account to re-enter its password"
+            ) from err
         except TonalError as err:
             raise UpdateFailed(str(err)) from err
 

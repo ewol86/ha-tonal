@@ -17,7 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
@@ -244,11 +244,21 @@ SENSORS: tuple[TonalSensorDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up the Tonal sensors."""
-    coordinator: TonalCoordinator = entry.runtime_data
+    """Set up sensors for every account on the trainer."""
+    for subentry_id, coordinator in entry.runtime_data.items():
+        _async_setup_account(entry, subentry_id, coordinator, async_add_entities)
 
+
+@callback
+def _async_setup_account(
+    entry: ConfigEntry,
+    subentry_id: str,
+    coordinator: TonalCoordinator,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Set up the sensors for one account, on that account's device."""
     entities: list[SensorEntity] = [
         TonalSensor(coordinator, description) for description in SENSORS
     ]
@@ -264,16 +274,18 @@ async def async_setup_entry(
         if not new:
             return
         known_muscles.update(new)
-        async_add_entities(TonalMuscleSensor(coordinator, muscle) for muscle in new)
+        async_add_entities(
+            (TonalMuscleSensor(coordinator, muscle) for muscle in new),
+            config_subentry_id=subentry_id,
+        )
 
     if coordinator.data is not None:
         known_muscles.update(coordinator.data.muscles)
         entities.extend(
-            TonalMuscleSensor(coordinator, muscle)
-            for muscle in sorted(known_muscles)
+            TonalMuscleSensor(coordinator, muscle) for muscle in sorted(known_muscles)
         )
 
-    async_add_entities(entities)
+    async_add_entities(entities, config_subentry_id=subentry_id)
 
     # Muscle groups only appear once they have been trained, so watch for more.
     entry.async_on_unload(coordinator.async_add_listener(_async_add_muscles))
@@ -288,12 +300,13 @@ class TonalEntity(CoordinatorEntity[TonalCoordinator]):
     def __init__(self, coordinator: TonalCoordinator) -> None:
         """Initialise the entity."""
         super().__init__(coordinator)
-        entry = coordinator.config_entry
-        self._account_id = entry.unique_id or entry.entry_id
+        # Keyed on the Tonal user id, not the subentry, so unique ids survive
+        # an account being removed and added back.
+        self._account_id = coordinator.user_id or coordinator.subentry_id
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self._account_id)},
             manufacturer=MANUFACTURER,
-            name=entry.title,
+            name=coordinator.account_title,
             model="Tonal",
             configuration_url="https://www.tonal.com",
         )

@@ -1,10 +1,10 @@
 export_data:
   fields:
-    config_entry_id:
+    account:
       required: false
+      example: John Smith
       selector:
-        config_entry:
-          integration: tonal
+        text:
     file_path:
       required: false
       example: /config/tonal_backup.json.gz

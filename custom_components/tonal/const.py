@@ -16,6 +16,10 @@ PAGE_LIMIT: Final = 100
 
 CONF_REFRESH_TOKEN: Final = "refresh_token"
 CONF_FETCH_TITLES: Final = "fetch_titles"
+CONF_USER_ID: Final = "user_id"
+
+# One config entry represents the trainer; each account on it is a subentry.
+SUBENTRY_TYPE_ACCOUNT: Final = "account"
 
 DEFAULT_SCAN_INTERVAL_MINUTES: Final = 30
 MIN_SCAN_INTERVAL_MINUTES: Final = 5
@@ -35,9 +39,10 @@ ATTRIBUTION: Final = "Data provided by Tonal"
 MANUFACTURER: Final = "Tonal"
 
 SERVICE_EXPORT_DATA: Final = "export_data"
+ATTR_ACCOUNT: Final = "account"
 ATTR_FILE_PATH: Final = "file_path"
 ATTR_FULL: Final = "full"
 ATTR_GZIP: Final = "gzip"
 
 STORAGE_VERSION: Final = 1
-STORAGE_KEY_TEMPLATE: Final = "tonal.titles.{entry_id}"
+STORAGE_KEY_TEMPLATE: Final = "tonal.titles.{subentry_id}"

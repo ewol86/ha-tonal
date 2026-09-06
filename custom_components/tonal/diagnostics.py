@@ -32,13 +32,27 @@ async def async_get_config_entry_diagnostics(
     The workout list itself is left out; it is large and personal. What is
     included is enough to debug shape and freshness problems.
     """
-    coordinator: TonalCoordinator = entry.runtime_data
+    coordinators: dict[str, TonalCoordinator] = entry.runtime_data
+
+    return {
+        "entry": {"options": dict(entry.options)},
+        "accounts": [
+            _account_diagnostics(coordinator) for coordinator in coordinators.values()
+        ],
+    }
+
+
+def _account_diagnostics(coordinator: TonalCoordinator) -> dict[str, Any]:
+    """Return the redacted state of one account."""
+    subentry = coordinator.subentry
     data = coordinator.data
 
     return {
-        "entry": {
-            "options": dict(entry.options),
-            "data": async_redact_data(dict(entry.data), TO_REDACT),
+        "subentry": {
+            "title": coordinator.account_title,
+            "data": async_redact_data(dict(subentry.data), TO_REDACT)
+            if subentry
+            else None,
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
