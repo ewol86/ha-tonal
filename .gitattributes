@@ -1,0 +1,6 @@
+# Home Assistant runs on Linux; keep LF in the repo regardless of the OS a
+# contributor checks out on.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
