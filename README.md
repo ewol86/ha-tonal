@@ -26,12 +26,33 @@ directory and restart.
 
 ## Configuration
 
-Everything is done in the UI. You are asked for your Tonal email and password.
-They are sent directly to Tonal's Auth0 endpoint over HTTPS and stored only in
-your local config entry — the integration uses the refresh token for routine
-polling and only falls back to the password when the session cannot be renewed.
+Everything is done in the UI. Setup asks for one Tonal email and password;
+credentials go directly to Tonal's Auth0 endpoint over HTTPS and are stored only
+locally. Routine polling uses the refresh token, falling back to the password
+only when a session cannot be renewed.
 
-Under **Configure** you can set:
+### Multiple people on one trainer
+
+A Tonal is usually shared, but Tonal's API is per-account — every login and poll
+belongs to one person. So the integration models the trainer as a single entry
+with one **account** per person underneath it:
+
+```
+Tonal                    [Add account]
+├─ John Smith    18 entities   (device)
+└─ Jane Smith    18 entities   (device)
+```
+
+Add the rest of the household from the integration page → **Add account**. Each
+account gets its own device, its own full set of sensors, and its own polling —
+one person's login going stale leaves everyone else's sensors working.
+
+Because Home Assistant subentries can't run a reauthentication flow, a stale
+session surfaces as that account's sensors going unavailable with an error in
+the log, rather than the usual "reauthenticate" prompt. Fix it with **⋮ → Sign
+in again** on that account.
+
+Under **Configure** you can set, for all accounts at once:
 
 | Option | Default | Notes |
 | --- | --- | --- |
@@ -82,14 +103,15 @@ anything that already reads a ToneGet export will read this too.
 ```yaml
 action: tonal.export_data
 data:
+  account: John Smith
   full: false
   gzip: true
 ```
 
 | Field | Default | Notes |
 | --- | --- | --- |
-| `config_entry_id` | first account | Which account to export |
-| `file_path` | `/config/tonal_workouts_<timestamp>.json.gz` | Must be your config dir or in `allowlist_external_dirs` |
+| `account` | the only account | The name shown on the account's device. Required once more than one account exists — the service refuses to guess |
+| `file_path` | `/config/tonal_<account>_<timestamp>.json.gz` | Must be your config dir or in `allowlist_external_dirs` |
 | `full` | `false` | Keep every raw API field instead of trimming unused ones |
 | `gzip` | `true` | Write `.json.gz` |
 
@@ -135,6 +157,23 @@ The first run additionally makes one request per distinct workout template to
 resolve names; those are cached in `.storage` and never re-fetched. A 500-workout
 account therefore settles at about 9 requests per poll — comparable to opening
 the app.
+
+## Upgrading from 1.x
+
+1.x set each account up as a separate config entry. 2.0 replaces that with one
+entry and an account per person. There is no supported way to merge existing
+entries, so the upgrade is manual:
+
+1. Copy the new `custom_components/tonal/` over the old one and restart
+2. Delete every existing Tonal entry
+3. **Add Integration → Tonal**, sign in as the first person
+4. **Add account** for everyone else
+
+Entity unique IDs are keyed on the Tonal user ID rather than the config entry,
+so re-adding an account reclaims its old entity IDs and its recorder history and
+statistics carry on uninterrupted. Note your entity IDs before you start so you
+can confirm nothing drifted — if an entity comes back with a `_2` suffix, its
+old registry entry was still holding the name.
 
 ## Troubleshooting
 
