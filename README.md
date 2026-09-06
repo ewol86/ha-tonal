@@ -39,8 +39,8 @@ with one **account** per person underneath it:
 
 ```
 Tonal                    [Add account]
-├─ John Smith    18 entities   (device)
-└─ Jane Smith    18 entities   (device)
+├─ John Smith    27 entities   (device)
+└─ Jane Smith    27 entities   (device)
 ```
 
 Add the rest of the household from the integration page → **Add account**. Each
