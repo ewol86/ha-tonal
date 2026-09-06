@@ -1,0 +1,12 @@
+{
+  "domain": "tonal",
+  "name": "Tonal",
+  "codeowners": ["@curlrequests"],
+  "config_flow": true,
+  "documentation": "https://github.com/curlrequests/toneget",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/curlrequests/toneget/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

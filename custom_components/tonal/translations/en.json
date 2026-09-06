@@ -1,0 +1,90 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your Tonal account",
+        "description": "Your credentials are sent straight to Tonal's Auth0 servers and are only stored locally, so the integration can renew its session.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Tonal needs you to sign in again",
+        "description": "Re-enter the password for {email}.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Tonal rejected that email and password.",
+      "cannot_connect": "Could not reach Tonal.",
+      "unknown": "Unexpected error. Check the logs for details."
+    },
+    "abort": {
+      "already_configured": "That Tonal account is already set up.",
+      "reauth_successful": "Tonal was reconnected."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tonal options",
+        "data": {
+          "scan_interval": "Update interval (minutes)",
+          "fetch_titles": "Look up workout names"
+        },
+        "data_description": {
+          "scan_interval": "How often to poll Tonal. Workout history changes rarely, so there is little reason to go below 15 minutes.",
+          "fetch_titles": "Fetches the name of each workout template once and caches it. Turn this off to keep the request count to a minimum."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_workouts": { "name": "Total workouts" },
+      "total_volume": { "name": "Total volume" },
+      "total_reps": { "name": "Total reps" },
+      "last_workout": { "name": "Last workout" },
+      "last_workout_title": { "name": "Last workout name" },
+      "last_workout_volume": { "name": "Last workout volume" },
+      "last_workout_reps": { "name": "Last workout reps" },
+      "last_workout_duration": { "name": "Last workout duration" },
+      "days_since_last_workout": { "name": "Days since last workout" },
+      "workouts_last_7_days": { "name": "Workouts last 7 days" },
+      "workouts_last_30_days": { "name": "Workouts last 30 days" },
+      "volume_last_7_days": { "name": "Volume last 7 days" },
+      "strength_score": { "name": "Strength score" },
+      "strength_score_upper": { "name": "Strength score upper" },
+      "strength_score_lower": { "name": "Strength score lower" },
+      "strength_score_core": { "name": "Strength score core" },
+      "custom_workouts": { "name": "Custom workouts" }
+    }
+  },
+  "services": {
+    "export_data": {
+      "name": "Export data",
+      "description": "Writes the current Tonal data to a JSON file in the ToneGet export format.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Config entry",
+          "description": "Which Tonal account to export. Defaults to the first one."
+        },
+        "file_path": {
+          "name": "File path",
+          "description": "Where to write the file. Defaults to a timestamped file in your config directory. Any other location must be in allowlist_external_dirs."
+        },
+        "full": {
+          "name": "Full export",
+          "description": "Keep every raw API field instead of trimming the unused ones."
+        },
+        "gzip": {
+          "name": "Compress",
+          "description": "Write a gzipped .json.gz file."
+        }
+      }
+    }
+  }
+}

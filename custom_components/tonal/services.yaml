@@ -1,0 +1,22 @@
+export_data:
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: tonal
+    file_path:
+      required: false
+      example: /config/tonal_backup.json.gz
+      selector:
+        text:
+    full:
+      required: false
+      default: false
+      selector:
+        boolean:
+    gzip:
+      required: false
+      default: true
+      selector:
+        boolean:
